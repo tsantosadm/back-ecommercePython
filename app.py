@@ -15,14 +15,24 @@ class Product(db.Model):
     description = db.Column(db.Text, nullable=True)
     
 #Definição de rota para requisitar cadastro
-@app.route('/api/products/add')
+@app.route('/api/products/add', methods=['POST'])
 def add_product():
     data = request.json
     if 'name' in data and 'price' in data:
-        product = Product(name=data['name'], price=data['price'], description=data.get("description", ""))
+        product = Product(name=data['name'], price=data['price'], description=data.get('description', ''))
         db.session.add(product)
         db.session.commit()
-        return jsonify({"message": "Product added successfully"})
+        return jsonify({"message": "Product added successfully"}), 200
+    return jsonify({"message": "Invalid product data"}), 400
+
+@app.route('/api/products/delete/<int:product_id>', methods=['DELETE'])
+def delete_product(product_id):
+    product = Product.query.get(product_id)
+    if product:
+        db.session.delete(product)
+        db.session.commit()
+        return jsonify({"messagem": "Product deleted successfully"}), 200
+    return jsonify({"message": "Product not found"}), 404
     
 #Definir uma rota raiz (paǵina inicial) e a função que será requisitada ao requisitar
 @app.route('/')
